@@ -18,12 +18,12 @@ symbols = [
 bars={}
 for symbol in symbols:
     bars[symbol] = pd.read_csv(
-        "./Data/cleaned/{s}_hourly_bars.csv".format(s=symbol), 
+        "../Data/cleaned/{s}_hourly_bars.csv".format(s=symbol), 
         parse_dates=["datetime"]
     )
 
-slopes = pd.read_csv("./Models/pairwise_slopes.csv", index_col=0)
-intercepts = pd.read_csv("./Models/pairwise_intercepts.csv", index_col=0)
+slopes = pd.read_csv("../Models/pairwise_slopes.csv", index_col=0)
+intercepts = pd.read_csv("../Models/pairwise_intercepts.csv", index_col=0)
 
 #%%
 fcast = "LUV"

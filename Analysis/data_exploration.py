@@ -7,7 +7,7 @@ import datetime
 import pytz
 
 #%%
-symbols = [ #UNITED
+symbols = [
     "AAL", "DAL", "LUV", "ALGT", "UAL", #airlines
     "CVX", "MRO", "MUR", "XOM", "DVN", #oil
     "SPY", "TLT" #market and rates
@@ -16,7 +16,7 @@ symbols = [ #UNITED
 bars={}
 for symbol in symbols:
     bars[symbol] = pd.read_csv(
-        "./Data/cleaned/{s}_hourly_bars.csv".format(s=symbol), 
+        "../Data/cleaned/{s}_hourly_bars.csv".format(s=symbol), 
         parse_dates=["datetime"]
     )
 

@@ -8,14 +8,14 @@ import requests
 import datetime
 import pytz
 
-#%%
+#%% ALPACA CREDENTIALS
 BASE_URL = "https://data.alpaca.markets/v2"
 headers = {
     "APCA-API-KEY-ID": os.environ.get("APCA_KEY_ID"), 
     "APCA-API-SECRET-KEY": os.environ.get("APCA_SECRET_KEY")
 }
 
-#%%
+#%% FUNCTION TO GET BARS FROM ALPACA
 def get_bars(dt_start, dt_end, ticker, timeframe):
     df = None
     page_token = None
@@ -55,17 +55,18 @@ def get_bars(dt_start, dt_end, ticker, timeframe):
     return df
 
 
-#%%
-symbol = "UAL"
+#%% COLLECT DATA FOR DESIRED SYMBOLS
 if __name__ == "__main__":
-    data = get_bars(
-        datetime.datetime(2016, 1, 1, 0, 0, tzinfo=pytz.UTC),
-        datetime.datetime(2021, 5, 1, 0, 0, tzinfo=pytz.UTC),
-        symbol,
-        "1Hour" #1Hour, 1Day
-    )
-    data.to_csv("./Data/raw/"+symbol+"_hourly_bars.csv", index=False)
-
-# %%
-data
-# %%
+    symbols = [ #UNITED
+        "AAL", "DAL", "LUV", "ALGT", "UAL", #airlines
+        "CVX", "MRO", "MUR", "XOM", "DVN", #oil
+        "SPY", "TLT" #market and rates
+    ]   
+    for symbol in symbols:
+        data = get_bars(
+            datetime.datetime(2016, 1, 1, 0, 0, tzinfo=pytz.UTC),
+            datetime.datetime(2021, 5, 1, 0, 0, tzinfo=pytz.UTC),
+            symbol,
+            "1Hour" #1Hour, 1Day
+        )
+        data.to_csv("./raw/"+symbol+"_hourly_bars.csv", index=False)

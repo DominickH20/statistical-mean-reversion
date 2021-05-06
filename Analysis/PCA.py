@@ -25,7 +25,7 @@ airlines_oil = symbols[0:10]
 bars={}
 for symbol in symbols:
     bars[symbol] = pd.read_csv(
-        "./Data/cleaned/{s}_hourly_bars.csv".format(s=symbol), 
+        "../Data/cleaned/{s}_hourly_bars.csv".format(s=symbol), 
         parse_dates=["datetime"]
     )
 
