@@ -1,7 +1,9 @@
 #%%
 import numpy as np
 import pandas as pd
+import matplotlib
 import matplotlib.pyplot as plt
+cmap = matplotlib.cm.get_cmap("cividis")
 
 import datetime
 import pytz
@@ -51,10 +53,10 @@ for threshold in rng:
 
 pnls = np.asarray(pnls)
 
-fig, axs = plt.subplots(1,1, figsize=(12,8))
-axs.plot(rng, pnls[:,0], label="1h markout")
-axs.plot(rng, pnls[:,1], label="2h markout")
-axs.plot(rng, pnls[:,2], label="4h markout")
+fig, axs = plt.subplots(1,1, figsize=(8,6))
+axs.plot(rng, pnls[:,0], label="1h markout", c=cmap(1/3))
+axs.plot(rng, pnls[:,1], label="2h markout", c=cmap(2/3))
+axs.plot(rng, pnls[:,2], label="4h markout", c=cmap(3/3))
 axs.legend()
 axs.set_xlabel("Signal Threshold")
 axs.set_ylabel("Sum of Markouts")
@@ -72,12 +74,11 @@ for threshold in rng:
 
 pnls = np.asarray(pnls)
 
-fig, axs = plt.subplots(1,1, figsize=(12,8))
-axs.plot(rng, pnls[:,0], label="1h markout")
-axs.plot(rng, pnls[:,1], label="2h markout")
-axs.plot(rng, pnls[:,2], label="4h markout")
+fig, axs = plt.subplots(1,1, figsize=(8,6))
+axs.plot(rng, pnls[:,0], label="1h markout", c=cmap(1/3))
+axs.plot(rng, pnls[:,1], label="2h markout", c=cmap(2/3))
+axs.plot(rng, pnls[:,2], label="4h markout", c=cmap(3/3))
 axs.legend()
 axs.set_xlabel("Signal Threshold")
 axs.set_ylabel("Sum of Markouts")
 axs.set_title("PnL Curve for selling " + fcast + " on " + using + " Returns")
-# %%

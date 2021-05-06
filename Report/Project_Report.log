@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.14159265-2.6-1.40.20 (MiKTeX 2.9.7250 64-bit) (preloaded format=pdflatex 2020.1.29)  6 MAY 2021 13:40
+This is pdfTeX, Version 3.14159265-2.6-1.40.20 (MiKTeX 2.9.7250 64-bit) (preloaded format=pdflatex 2020.1.29)  6 MAY 2021 18:13
 entering extended mode
 **c:/Users/domin/OneDrive/Documents/Education/University/Year4/Semester2/CSC265/Final/Report/Project_Report.tex
 (c:/Users/domin/OneDrive/Documents/Education/University/Year4/Semester2/CSC265/Final/Report/Project_Report.tex
@@ -313,15 +313,15 @@ File: umsb.fd 2013/01/14 v3.01 AMS symbols B
 
 {C:/Users/domin/AppData/Local/MiKTeX/2.9/pdftex/config/pdftex.map}] [2] (c:/Users\domin\OneDrive\Documents\Education\University\Year4\Semester2\CSC265\Final\Report\Project_Report.aux) ) 
 Here is how much of TeX's memory you used:
- 12524 strings out of 492482
- 235866 string characters out of 3121575
+ 12525 strings out of 492482
+ 235881 string characters out of 3121575
  528873 words of memory out of 3000000
- 16849 multiletter control sequences out of 15000+200000
- 538494 words of font info for 47 fonts, out of 3000000 for 9000
+ 16850 multiletter control sequences out of 15000+200000
+ 538801 words of font info for 48 fonts, out of 3000000 for 9000
  1141 hyphenation exceptions out of 8191
  44i,6n,67p,321b,319s stack positions out of 5000i,500n,10000p,200000b,50000s
 <C:/Users/domin/AppData/Local/Programs/MiKTeX 2.9/fonts/type1/public/amsfonts/cm/cmbx12.pfb><C:/Users/domin/AppData/Local/Programs/MiKTeX 2.9/fonts/type1/public/amsfonts/cm/cmbx9.pfb><C:/Users/domin/AppData/Local/Programs/MiKTeX 2.9/fonts/type1/public/amsfonts/cm/cmr10.pfb><C:/Users/domin/AppData/Local/Programs/MiKTeX 2.9/fonts/type1/public/amsfonts/cm/cmr12.pfb><C:/Users/domin/AppData/Local/Programs/MiKTeX 2.9/fonts/type1/public/amsfonts/cm/cmr17.pfb><C:/Users/domin/AppData/Local/Programs/MiKTeX 2.9/fonts/type1/public/amsfonts/cm/cmr9.pfb>
-Output written on c:/Users\domin\OneDrive\Documents\Education\University\Year4\Semester2\CSC265\Final\Report\Project_Report.pdf (2 pages, 77518 bytes).
+Output written on c:/Users\domin\OneDrive\Documents\Education\University\Year4\Semester2\CSC265\Final\Report\Project_Report.pdf (2 pages, 84889 bytes).
 PDF statistics:
  33 PDF objects out of 1000 (max. 8388607)
  0 named destinations out of 1000 (max. 500000)
