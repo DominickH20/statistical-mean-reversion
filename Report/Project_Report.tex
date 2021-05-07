@@ -2,15 +2,19 @@
 \usepackage{amsmath}
 \usepackage{amssymb}
 \usepackage{graphicx}
-%\usepackage[margin=1in]{geometry}
+\usepackage[utf8]{inputenc}
+\usepackage[table]{xcolor}
+\usepackage[margin=1.2in]{geometry}
 
 
 \usepackage{lipsum}
 
-\title{Forecasting Airline and Oil Company Prices \\
-using Statistical Mean Reversion \\
+\title{Statistical Mean Reversion of \\
+Airline and Oil Company Stock Prices \\
 \large CSC 265 Final Project}
-\author{Dominick Harasimiuk - 30702462}
+\author{Dominick Harasimiuk - 30702462\\
+Source Code Available At:\\ 
+https://github.com/DominickH20/statistical-mean-reversion}
 \date{May 7, 2021}
 
 
@@ -26,67 +30,205 @@ using Statistical Mean Reversion \\
 
 \newpage
 \section{Introduction}
-\subsection{Project Goal}
+The intent of this project is to build a reliable statistical mean reversion trading strategy
+on correlated baskets of stocks, specifically airline and oil company stocks. Airline companies
+are exposed to very similar pools of risk, and the same can be said for oil companies. Because
+of this, one would expect their stock prices to move together when these underlying risk
+factors change. Because airlines are large consumers of oil, one might expect the airline and
+oil sectors to exhibit some relationship as well.
+\subsection{Statistical Mean Reversion}
+This project aims to develop a model for how these companies behave in relation
+to one another. This model can be thought of as the "mean" in this mean reversion concept. I
+utilize this model in the context of a trading strategy by computing the expected stock return 
+at time $t$, call it $e_t$. The expected return can be compared to the actual return, $a_t$
+at that same time period $t$. This generates a residual, $r_t = a_t - e_t$. If this residual
+is sufficiently positive, then the strategy concludes that the stock in question has grown too 
+much over the period, so it would sell. Likewise, if the $r_t$ is sufficiently negative, then the 
+strategy judges that stock has underperformed over the period relative to its peers, so it would buy. In both cases
+the strategy is betting on convergence to the statistical relationship between the securities.
+In this paper, I outline such strategies on pairs of securities as well as baskets of securities,
+using principal component analysis to handle the multicollinearity problem for regression
+models implemented on such data.
+
 \subsection{Data}
-\subsection{Terminology and Formulas}
+\subsubsection{Scope}
+The data used in the subsequent analyses were obtained from the Alpaca Markets historical 
+market data API. The securities examined in this study are the following: American Airlines
+(AAL), Delta Airlines (DAL), Southwest Airlines (LUV), Allegiant Airlines (ALGT), United
+Airlines (UAL), Chevron (CVX), Marathon Oil (MRO), Murphy Oil (MUR), Exxon Mobil (XOM),
+Devon Energy (DVN), SPDR S\&P 500 ETF, and iShares Treasury Bond ETF (TLT). There 
+are 5 airline companies, 5 oil companies, and 2 market factors (SPY and TLT). The motivation
+behind including the market factors in this study is that they help parameterize what is going
+on in equity and debt markets at any given point in time.
+\subsubsection{Data Format}
+The data range from
+the start of 2016 to May 1st 2021. The years 2020 and 2021 are held out as test data while the
+rest of the data is used to train the models. Given the occurrence of the pandemic in 2020,
+this is a particularly challenging test set. The data is organized in a \textit{bar} format.
+Bars are a common way of aggregating financial data and are structured as follows:
+$$B_{S} = \begin{bmatrix} \mathrm{bar}_0, & \mathrm{bar}_1, & 
+    ..., & \mathrm{bar}_n \end{bmatrix}$$
+$$\mathrm{bar}_i = \begin{bmatrix} \mathrm{datetime}_i & \mathrm{open}_i & 
+    \mathrm{high}_i & \mathrm{low}_i & \mathrm{close}_i & \mathrm{volume}_i 
+\end{bmatrix}$$
+Where $S$ is some security, and $B_S$ is the bar set for that security. Each bar summarizes
+a section of trading activity. The open and close are the first and last trades occurring within
+the timeframe of the bar, while the high and low are the highest and lowest trade prices 
+observed within the timeframe of the bar. The volume represents the number of shares that
+traded within the bar. For this analysis, only the closing prices are used.
+\subsubsection{Data Cleaning}
+The data set was cleaned and imputed before use in any models. There were missing bars 
+for several securities, so the most abundant time series (SPY) was used as a baseline for 
+bar availability. For every bar in SPY, if there was not an analagous bar present in each 
+other security, $S$, then the most recent bar in $S$ was backfilled in its place. 
+
+There were
+also several outliers present in the data that would obstruct the fitting of linear models. 
+\textbf{PLOT HERE} In 
+order for the models to be able to learn the usual relationship between the securities, I used
+the middle 99\% of data \textit{for training only}. The models were still evaluated on train and
+test data that included outliers. The outlier removal was solely done to improve the fit of the
+linear models.
+
+
+\subsection{Returns and Markouts}
+\subsubsection{Returns}
+Asset returns represent 
+a scaled first difference in the data, so they eliminate the serial component in the 
+time series data along with the complications associated with this. The actual return 
+as mentioned above can be defined as follows:
+$$a_t = \frac{P_t - P_{t-1}}{P_{t-1}}$$
+Normal approximations
+have been used for asset returns on the monthly time scale, however, over short intervals this
+assumption breaks down. The hourly returns used in this study are abundant close to 0 and 
+extreme returns occur with greater frequency than under normality assumptions. \textbf{PLOT?}
+Despite this fact, OLS is a \textit{BLUE} estimator, so we can still confidently estimate 
+a line despite the distribution not being normal. 
+\subsubsection{Markouts}
+Markouts are a way of computing hypothetical trade profits or losses. At every point along the
+time series, we hypothetically enter a trade and hold for some predefined number of time 
+periods, after which we exit the trade. Note that the entry can be a selling (short selling)
+or buying trade, while the exit is simply the opposite side of the entry transaction. To 
+specify this more rigorously, we can write:
+$$M_{t,k} = \begin{cases} 
+P_{t+k} - P_t \text { if Buy}\\
+P_t - P_{t+k} \text { if Sell}
+\end{cases}$$
+This is the markout at time $t$, held for $k$ periods. Notice that $M^B_{t,k} = -M^S_{t,k}$,
+meaning that the profit or loss of a buying and selling trade at a given point in time are 
+exact opposites (since the asset can only move one direction). A good trading signal is one
+that is able to separate positive from negative markouts. 
 
 \section{Pairwise Mean Reversion}
+Overview Here
 \subsection{Pairwise Correlations}
+Include plots of correlations, no outliers
 \subsection{Pairwise OLS}
+Include regression plot, coefficient plots
 \subsection{Residual OLS for Forecasting}
+Can include the coefficient plot if I want to, Good intuition but not testable
 \subsection{Profit and Loss Analysis}
+Introduce cumulative markout sums and parameter tuning.
+include the PNl curves, and some pnl heatmaps
+comment on allegiant
 
 \section{Principal Component Basket Mean Reversion}
+overview of goal and intuition here
 \subsection{Dimensionality Reduction}
-AIRLINE
-PC1	Full	Lasso
-AAL	0.003519	0.003487	0.003487
-DAL	0.002762	0.002725	0.002725
-LUV	0.002839	0.002819	0.002819
-ALGT	0.003561	0.003554	0.003554
-UAL	0.002931	0.002902	0.002902
-
-OIL
-PC1	Full	Lasso
-CVX	0.002338	0.002136	0.002136
-MRO	0.004708	0.004647	0.004647
-MUR	0.004573	0.004536	0.004536
-XOM	0.002240	0.002047	0.002047
-DVN	0.004302	0.004281	0.004284
-
-AIRLINEOIL
-PC1	Full	Lasso
-AAL	0.004306	0.003475	0.003478
-DAL	0.003450	0.002721	0.002722
-LUV	0.003363	0.002809	0.002809
-ALGT	0.003865	0.003552	0.003553
-UAL	0.003602	0.002896	0.002896
-CVX	0.002320	0.002124	0.002125
-MRO	0.004851	0.004640	0.004641
-MUR	0.004661	0.004530	0.004530
-XOM	0.002231	0.002044	0.002044
-DVN	0.004414	0.004275	0.004278
-
-FULL
-PC1	Full	Lasso
-AAL	0.004301	0.003458	0.003458
-DAL	0.003446	0.002713	0.002713
-LUV	0.003359	0.002801	0.002801
-ALGT	0.003863	0.003543	0.003545
-UAL	0.003598	0.002891	0.002891
-CVX	0.002316	0.002104	0.002105
-MRO	0.004854	0.004634	0.004635
-MUR	0.004666	0.004530	0.004531
-XOM	0.002227	0.001996	0.001996
-DVN	0.004418	0.004271	0.004275
-SPY	0.001469	0.001329	0.001330
-TLT	0.001574	0.001546	0.001546
+variance explained - show plots of first 4 PCs
+correlation with returns
+anomalies with coefficients
 \subsection{Basket OLS}
+Describe fit and any coefficient plots here
+describe feature selection
 \subsection{Basket Lasso for Feature Selection}
+Omit this - mention briefly
 \subsection{Profit and Loss Analysis}
+plots of some pnls, also buying and selling matrices
+Discuss why there is shortfall
 
 \section{Discussion}
+discuss shortfall of full strategy and why this might have occurred
+dangers of assuming things revert to mean, mention correlation breakdowns during
+covid
+mention statistical issues with fit - high Dimensionality and lasso doing 
+a poor job of feature selection because there are so many data points close to the 
+0,0
 
 \section{Conclusion}
+highlight what was accomplished and what takeaways and next steps are
+
+\newpage
+\section{Appendix}
+
+\begin{table}[!htb]
+    \begin{minipage}{.5\linewidth}
+      \caption{Airline PC Regression RMSE}
+      \centering
+      \begin{tabular}{ c|c|c|c }
+        \textbf{Ticker} & \textbf{PC1} & \textbf{Full} & \textbf{Lasso} \\
+        \hline
+        AAL	& 0.003519 & 0.003487 & 0.003487\\
+        DAL	& 0.002762 & 0.002725 & 0.002725\\
+        LUV	& 0.002839 & 0.002819 & 0.002819\\
+        ALGT & 0.003561 & 0.003554 & 0.003554\\
+        UAL	& 0.002931 & 0.002902 & 0.002902\\
+        \end{tabular}
+    \end{minipage}%
+    \begin{minipage}{.5\linewidth}
+      \centering
+        \caption{Oil PC Regression RMSE}
+        \begin{tabular}{ c|c|c|c  }
+            \textbf{Ticker} & \textbf{PC1} & \textbf{Full} & \textbf{Lasso} \\
+            \hline
+            CVX	& 0.002338	& 0.002136	& 0.002136\\
+            MRO	& 0.004708	& 0.004647	& 0.004647\\
+            MUR	& 0.004573	& 0.004536	& 0.004536\\
+            XOM	& 0.002240	& 0.002047	& 0.002047\\
+            DVN	& 0.004302	& 0.004281	& 0.004284\\
+        \end{tabular}
+    \end{minipage} 
+\end{table}
+
+\begin{table}[!htb]
+    \begin{minipage}{.5\linewidth}
+      \caption{Airline and Oil PC Regression RMSE}
+      \centering
+      \begin{tabular}{ c|c|c|c }
+        \textbf{Ticker} & \textbf{PC1} & \textbf{Full} & \textbf{Lasso} \\
+        \hline
+        AAL	& 0.004306	& 0.003475	& 0.003478\\
+        DAL	& 0.003450	& 0.002721	& 0.002722\\
+        LUV	& 0.003363	& 0.002809	& 0.002809\\
+        ALGT & 0.003865	& 0.003552	& 0.003553\\
+        UAL	& 0.003602	& 0.002896	& 0.002896\\
+        CVX	& 0.002320	& 0.002124	& 0.002125\\
+        MRO	& 0.004851	& 0.004640	& 0.004641\\
+        MUR	& 0.004661	& 0.004530	& 0.004530\\
+        XOM	& 0.002231	& 0.002044	& 0.002044\\
+        DVN	& 0.004414	& 0.004275	& 0.004278\\
+        \end{tabular}
+    \end{minipage}%
+    \begin{minipage}{.5\linewidth}
+      \centering
+        \caption{Full PC Regression RMSE}
+        \begin{tabular}{ c|c|c|c  }
+            \textbf{Ticker} & \textbf{PC1} & \textbf{Full} & \textbf{Lasso} \\
+            \hline
+            AAL	& 0.004301	& 0.003458	& 0.003458\\
+            DAL	& 0.003446	& 0.002713	& 0.002713\\
+            LUV	& 0.003359	& 0.002801	& 0.002801\\
+            ALGT & 0.003863	& 0.003543	& 0.003545\\
+            UAL	& 0.003598	& 0.002891	& 0.002891\\
+            CVX	& 0.002316	& 0.002104	& 0.002105\\
+            MRO	& 0.004854	& 0.004634	& 0.004635\\
+            MUR	& 0.004666	& 0.004530	& 0.004531\\
+            XOM	& 0.002227	& 0.001996	& 0.001996\\
+            DVN	& 0.004418	& 0.004271	& 0.004275\\
+            SPY	& 0.001469	& 0.001329	& 0.001330\\
+            TLT	& 0.001574	& 0.001546	& 0.001546\\
+        \end{tabular}
+    \end{minipage} 
+\end{table}
 
 \end{document}
