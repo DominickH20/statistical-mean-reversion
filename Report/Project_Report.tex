@@ -326,19 +326,42 @@ there appears to be a stronger relationship between AAL and PC2 than AAL and PC1
 \subsection{Basket OLS}
 After fitting the principal componenst on \textit{train} data, and OLS model
 was run with the held out symbol as response and the principal components as 
-predictors.
-
-Describe fit and any coefficient plots here
-describe feature selection
+predictors. The coefficients of the principal components can be seen below in
+Figure 9. We can also see that the intercept is not meaningfully different from 0.
 \begin{figure}[h!]
   \centering
   \includegraphics[width=.6\linewidth]{../Figures/Full_PCReg_coef.png}
   \caption{Full PC OLS Regression}
 \end{figure}
+An important thing to note is that this plot above, as well as the correlation plot
+found in Figure 7 display absolute values of coefficients and correlations. Because
+principal component analysis yields unique vectors, but not unique directions,
+we can flip the signs of the values for easier visual analysis.
 \subsubsection{Basket Lasso for Feature Selection}
-Omit this - mention briefly
+As mentioned in the start of section 3.1, I examined several subsets of data and 
+settled on the full principal component set as the best set of predictors for the model.
+The model can be thought of as follows:
+$$x_{target} = f(T(\mathbf{X}_{-target}))
+\quad
+\mathbf{X} = \begin{bmatrix}x_{target}, \mathbf{X}_{-target}\end{bmatrix}
+$$
+where $T$ is the orthogonal transformation applied to the predictors and
+$f$ is the function learned by OLS. Section 6.1
+outlines several choices of $\mathbf{X}$ and their corresponding RMSE. I also pplied
+a lasso regression to the data with a cross validated tuning parameter for 
+the impact of the L1 penalty, however, I found that the optimal loss penalty 
+was very small and that the RMSE of the original OLS model was better in 
+nearly every case. With this understanding, we can see that the best set
+of features is the full set, and that the best model to use is in fact OLS.
 
 \subsection{Profit and Loss Analysis}
+The application of the PnL analysis in this scenario is the same as in section
+2.3, and the formulas remain the same. However there is the caveat that now:
+$$r_t = a_t - f(T(\mathbf{x}_{-target,t}))$$
+We are using a transformed set of all the predictors to forecast the expected return
+for an asset. It is important to note that the PCA fit and OLS fit were 
+carried out on \textit{train} data, and that the same parameters were carried over 
+to evaluate the \textit{test} data and produce the plots that are seen below.
 \begin{figure}[h!]
   \centering
   \begin{subfigure}{.5\textwidth}
@@ -353,8 +376,10 @@ Omit this - mention briefly
   \end{subfigure}
   \caption{Basket Pnl Curves - ALGT}
 \end{figure}
-plots of some pnls, also buying and selling matrices
-Discuss why there is shortfall
+We can see in Figure 10 the PnL curves for Allegiant Airlines using all of the 
+principal component predictors. They are substantially more noisy when compared to the 
+plots in Figure 5, especially as the markout horizon grows longer. We can see
+the results for a 0 threshold PnL for all of the securities in Figure 11 below.
 \begin{figure}[h!]
   \centering
   \begin{subfigure}{.5\textwidth}
@@ -369,14 +394,54 @@ Discuss why there is shortfall
   \end{subfigure}
   \caption{Basket Model PnL}
 \end{figure}
+It is clear that there is still some activity at $\lambda = 0$ occuring in the data,
+however it is a lot more noisy. The threshold of 0 was maintained for ease of comparison
+to the other model, however it is not necessarily the case that $\lambda=0$ is an optimal
+threshold for this model, since it has different characteristics. Further discussion 
+can be found below.
 
 \section{Discussion}
-discuss shortfall of full strategy and why this might have occurred
-dangers of assuming things revert to mean, mention correlation breakdowns during
-covid
-mention statistical issues with fit - high Dimensionality and lasso doing 
-a poor job of feature selection because there are so many data points close to the 
-0,0
+The unexpected element of this analysis is the fact that the basket model with more
+data and more meticulous preprocessing of that data happens to perform worse
+than the comparatively simple pairwise model. There are several possible explanations
+for this and I will touch on a handful below.
+\subsection{The Compounding Outlier Problem}
+The breakdown of the full principal component model could
+be attributed to what I would call the "compounding outlier problem". The test set contains
+data from 2020 and 2021, and 2020 was a very volatile year with several extreme price 
+moves for airline and oil companies. These were driven primarily by the shutdown 
+of travel due to the pandemic and the brief period in April 2020 when the price of 
+oil was negative. However, even apart from the pandemic setting, the models in this
+study were fitted on outlier trimmed data. When evaluated on a pairwise basis,
+there is some chance of encountering an outlier at any given point in time in the 
+predictor series. However, when using $k$ predictor series in the model, there
+are $2^k$ possible scenarios in which outliers might play a role at any time $t$. 
+These outliers are thus more likely to be present in the larger model and can
+throw off the predictions substantially more often. 
+
+\subsection{Poor Feature Selection}
+Another possible explanation for the lackluster performance of the basket model could
+be attributed to poor feature selection. Based on the correlation matrix found 
+in Figure 2, it is hard to claim that each company's stock depends on all of the 
+other companies. The TLT ETF is a great example - it doesn't seem to relate well to 
+any of companies. Yet, after a principal component analysis, the left over
+principal components with rather poor correlation to the target are not dropped 
+by Lasso Regression. This could be due to the distribution of the data. There is 
+and abundance of hourly returns centered around or exactly equal to 0, and the outliers
+that were not removed (but rightfully deemed outliers) drive the fit to such an 
+extent that Lasso Regression neglects to shrink their coefficients.
+
+\subsection{Assumption Breakdown}
+It is perhaps always the case that assumption breakdown is at least in part responsible 
+for poor model performance. In this context, I don't refer to statistical assumptions,
+though the outliers may have had an impact as mentioned in section 4.1. Instead
+I refer to the stationarity assumptions made about the correlations between
+asset classes. This style of statistical mean reversion trading strategies relies
+on a continued statistical relationship between assets, which may cease to exist at 
+any point in time. 2020 was a great example of this because long standing correlations 
+between assets (eg. inverse correlation of S\&P 500 and Gold) broke down. It could 
+very well be the case that it is not reasonable to make convergence bets in the period
+defined by the test set.
 
 \section{Conclusion}
 highlight what was accomplished and what takeaways and next steps are
