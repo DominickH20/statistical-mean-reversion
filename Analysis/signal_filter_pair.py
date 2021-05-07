@@ -15,6 +15,8 @@ symbols = [
     "SPY", "TLT" #market and rates
 ]
 
+test_start = 16078
+
 bars={}
 for symbol in symbols:
     bars[symbol] = pd.read_csv(
@@ -22,12 +24,12 @@ for symbol in symbols:
         parse_dates=["datetime"]
     )
 
-slopes = pd.read_csv("../Models/pairwise_slopes.csv", index_col=0)
-intercepts = pd.read_csv("../Models/pairwise_intercepts.csv", index_col=0)
+slopes = pd.read_csv("../Models/model_out/pairwise_slopes.csv", index_col=0)
+intercepts = pd.read_csv("../Models/model_out/pairwise_intercepts.csv", index_col=0)
 
 #%%
-fcast = "LUV"
-using = "AAL"
+fcast = "ALGT"
+using = "DAL"
 
 params = [intercepts[using][fcast], slopes[using][fcast]] #intercept, slope
 corr_trade = pd.DataFrame()

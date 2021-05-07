@@ -18,6 +18,8 @@ symbols = [ #UNITED
     "SPY", "TLT" #market and rates
 ]
 
+test_start = 16078
+
 airlines = symbols[0:5]
 oil = symbols[5:10]
 airlines_oil = symbols[0:10]
@@ -27,7 +29,7 @@ for symbol in symbols:
     bars[symbol] = pd.read_csv(
         "../Data/cleaned/{s}_hourly_bars.csv".format(s=symbol), 
         parse_dates=["datetime"]
-    )
+    )[:test_start].reset_index(drop=True)
 
 #%%
 for symbol in symbols:
@@ -64,7 +66,7 @@ print(outlier_flag.values.shape)
 print(outlier_flag[outlier_flag.OUT==False].values.shape)
 
 #%% COMPUTE PCA 
-data = oil #change this to run on different sets of data
+data = symbols #change this to run on different sets of data
 pca = PCA()
 
 PCs = {}
@@ -126,6 +128,109 @@ sns.heatmap(round(abs(pc_corrs),3), annot=True, ax=axs, cmap = cmap)
 axs.set_title("PC Correlations")
 axs.set_xlabel("Response Variable")
 
+#%% FIT OLS REGRESSION MODEL ON PCs
+import statsmodels.api as sm
+from statsmodels.tools.eval_measures import rmse
+
+RMSES = {}
+RMSES["PC1"] = {}
+RMSES["Full"] = {}
+RMSES["Lasso"] = {}
+
+reg_pc1_models = {}
+for symbol in data:
+    Y = returns[outlier_flag.OUT==False][symbol].reset_index(drop=True)
+    X = PCs[symbol]["PC1"].reset_index(drop=True)
+    X = sm.add_constant(X)
+    print("PC1 model for y =", symbol, Y.shape, "on PCs and Intercept:",X.shape)
+    model = sm.OLS(Y,X)
+    results = model.fit()
+    reg_pc1_models[symbol] = results
+    
+    #print rmse
+    ypred = results.predict(X)
+    RMSES["PC1"][symbol] = rmse(Y, ypred)
+
+# %%
+reg_pc1_params = []
+for symbol in data:
+    reg_pc1_params.append(reg_pc1_models[symbol].params.values)
+
+reg_pc1_params = pd.DataFrame(
+    np.asarray(reg_pc1_params), 
+    index=data, columns=["Int", "PC1"]
+)
+
+fig, axs = plt.subplots(1,1, figsize=(12,8))
+sns.heatmap(round(abs(reg_pc1_params),3), annot=True, ax=axs, cmap = cmap)
+axs.set_title("OLS PC1 Regression Coefficients")
+axs.set_xlabel("Coefficient on PC")
+
+#%% FIT OLS REGRESSION MODEL ON PCs
+reg_pc_models = {}
+for symbol in data:
+    Y = returns[outlier_flag.OUT==False][symbol].reset_index(drop=True)
+    X = PCs[symbol].reset_index(drop=True)
+    X = sm.add_constant(X)
+    print("Full model for y =", symbol, Y.shape, "on PCs and Intercept:",X.shape)
+    model = sm.OLS(Y,X)
+    results = model.fit()
+    reg_pc_models[symbol] = results
+
+    #print rmse
+    ypred = results.predict(X)
+    RMSES["Full"][symbol] = rmse(Y, ypred)
+
+# %%
+reg_pc_params = []
+for symbol in data:
+    reg_pc_params.append(reg_pc_models[symbol].params.values)
+
+reg_pc_params = pd.DataFrame(
+    np.asarray(reg_pc_params), 
+    index=data, columns=["Int"] + ["PC"+str(i) for i in range(1,len(data))]
+)
+
+fig, axs = plt.subplots(1,1, figsize=(12,8))
+sns.heatmap(round(abs(reg_pc_params),3), annot=True, ax=axs, cmap = cmap)
+axs.set_title("OLS Full Regression Coefficients")
+axs.set_xlabel("Coefficient on PC")
+
+#%%
+from sklearn import linear_model
+
+lasso_pc_models = {}
+for symbol in data:
+    Y = returns[outlier_flag.OUT==False][symbol].reset_index(drop=True)
+    X = PCs[symbol].reset_index(drop=True)
+    X = sm.add_constant(X)
+    print("Lasso model for y =", symbol, Y.shape, "on PCs and Intercept:",X.shape)
+    reg = linear_model.LassoCV(cv=5, random_state=0).fit(X,Y)
+    lasso_pc_models[symbol] = reg
+
+    #print rmse
+    ypred = reg.predict(X)
+    RMSES["Lasso"][symbol] = rmse(Y, ypred)
+
+# %%
+lasso_pc_params = []
+for symbol in data:
+    lasso_pc_params.append(lasso_pc_models[symbol].coef_)
+
+lasso_pc_params = pd.DataFrame(
+    np.asarray(lasso_pc_params), 
+    index=data, columns=["Int"] + ["PC"+str(i) for i in range(1,len(data))]
+)
+
+fig, axs = plt.subplots(1,1, figsize=(12,8))
+sns.heatmap(round(abs(reg_pc_params),3), annot=True, ax=axs, cmap = cmap)
+axs.set_title("Lasso Regression Coefficients")
+axs.set_xlabel("Coefficient on PC")
+
+
+#%%
+RMSES = pd.DataFrame(RMSES)
+RMSES
 
 #%%
 #get targets

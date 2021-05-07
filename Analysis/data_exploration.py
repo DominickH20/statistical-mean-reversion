@@ -1,7 +1,9 @@
 #%%
 import numpy as np
 import pandas as pd
+import matplotlib
 import matplotlib.pyplot as plt
+cmap = matplotlib.cm.get_cmap("cividis")
 
 import datetime
 import pytz
@@ -13,12 +15,14 @@ symbols = [
     "SPY", "TLT" #market and rates
 ]
 
+test_start = 16078
+
 bars={}
 for symbol in symbols:
     bars[symbol] = pd.read_csv(
         "../Data/cleaned/{s}_hourly_bars.csv".format(s=symbol), 
         parse_dates=["datetime"]
-    )
+    )[:test_start].reset_index(drop=True)
 
 #%%
 for symbol in symbols:
@@ -64,10 +68,10 @@ outlier_flag_full = outlier_flag[:-1]
 
 # %%
 #PLOTTING
-fig, axs = plt.subplots(1,1, figsize=(12,12))
-x_sym = "AAL"
-y_sym = "SPY"
-axs.scatter(x=bars[x_sym]["return"], y=bars[y_sym]["return"], color="black")
+fig, axs = plt.subplots(1,1, figsize=(8,8))
+x_sym = "DAL"
+y_sym = "ALGT"
+axs.scatter(x=bars[x_sym]["return"], y=bars[y_sym]["return"], color=cmap(0.0), s=1)
 axs.set_xlabel(x_sym)
 axs.set_ylabel(y_sym)
 axs.set_title("Return Plot")
@@ -94,11 +98,11 @@ axs.set_title("Return Plot")
 #%%
 import seaborn as sns
 fig, axs = plt.subplots(1,1, figsize=(12,12))
-sns.heatmap(round(returns.corr(),2), square=True, annot=True, ax=axs)
+sns.heatmap(round(returns.corr(),2), square=True, annot=True, ax=axs, cmap=cmap)
 axs.set_title("Correlation Coefficients")
 
 fig, axs = plt.subplots(1,1, figsize=(12,12))
-sns.heatmap(round(returns[outlier_flag.OUT==False].corr(),2), square=True, annot=True, ax=axs)
+sns.heatmap(round(returns[outlier_flag.OUT==False].corr(),2), square=True, annot=True, ax=axs,cmap=cmap)
 axs.set_title("Correlation Coefficients (No Outlier)")
 
 
@@ -136,16 +140,16 @@ for symbol_y in symbols:
 intercepts = pd.DataFrame(intercepts, columns=symbols, index=symbols)
 slopes = pd.DataFrame(slopes, columns=symbols, index=symbols)
 #export model slopes and coefficients
-slopes.to_csv("./Models/pairwise_slopes.csv")
-intercepts.to_csv("./Models/pairwise_intercepts.csv")
+#slopes.to_csv("../Models/pairwise_slopes.csv")
+#intercepts.to_csv("../Models/pairwise_intercepts.csv")
 
 # %%
 fig, axs = plt.subplots(1,1, figsize=(12,12))
-sns.heatmap(round(intercepts,2), square=True, annot=True, ax=axs)
+sns.heatmap(round(intercepts,2), square=True, annot=True, ax=axs, cmap=cmap)
 axs.set_title("Intercepts")
 
 fig, axs = plt.subplots(1,1, figsize=(12,12))
-sns.heatmap(round(slopes,2), square=True, annot=True, ax=axs)
+sns.heatmap(round(slopes,2), square=True, annot=True, ax=axs, cmap=cmap)
 axs.set_title("Slopes")
 
 
@@ -177,8 +181,8 @@ axs.set_title("Slopes")
 # axs.set_title("Slope Significance")
 
 # %%
-y_sym = "UAL"
-x_sym = "DAL"
+y_sym = "DAL"
+x_sym = "ALGT"
 slr = models[y_sym][x_sym]
 line_x = np.linspace(-.05, .05, 1000)
 line_y = slr.params[0] + slr.params[1]*line_x
@@ -187,7 +191,8 @@ line_y = slr.params[0] + slr.params[1]*line_x
 # THIS IS BECAUSE OLS FITS on Y, USE ODR FOR PERPENDICULAR RESIDUALS
 plt.scatter(
     returns[outlier_flag.OUT==False][x_sym],
-    returns[outlier_flag.OUT==False][y_sym]
+    returns[outlier_flag.OUT==False][y_sym],
+    s=1, color=cmap(0.0)
 )
 plt.plot(line_x, line_y, color="black")
 
@@ -228,21 +233,22 @@ r_slopes = pd.DataFrame(r_slopes, columns=symbols, index=symbols)
 
 # %%
 fig, axs = plt.subplots(1,1, figsize=(12,12))
-sns.heatmap(round(r_intercepts,2), square=True, annot=True, ax=axs)
+sns.heatmap(round(r_intercepts,2), square=True, annot=True, ax=axs, cmap=cmap)
 axs.set_title("Resid Intercepts")
 
 fig, axs = plt.subplots(1,1, figsize=(12,12))
-sns.heatmap(round(r_slopes,2), square=True, annot=True, ax=axs)
+sns.heatmap(round(r_slopes,2), square=True, annot=True, ax=axs, cmap=cmap)
 axs.set_title("Resid Slopes")
 
 # %%
-y_sym = "XOM"
-x_sym = "CVX"
+y_sym = "DAL"
+x_sym = "ALGT"
 slr = resid_models[y_sym][x_sym]
 line_x = np.linspace(-.05, .05, 1000)
 line_y = slr.params[0] + slr.params[1]*line_x
 plt.scatter(
     models[x_sym][y_sym].resid[:-1], 
-    full_data[outlier_flag_full.OUT==False][y_sym+"_fut"]
+    full_data[outlier_flag_full.OUT==False][y_sym+"_fut"],
+    s=1, color=cmap(0.0)
 )
 plt.plot(line_x, line_y, color="black")
