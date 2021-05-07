@@ -66,7 +66,7 @@ print(outlier_flag.values.shape)
 print(outlier_flag[outlier_flag.OUT==False].values.shape)
 
 #%% COMPUTE PCA 
-data = symbols #change this to run on different sets of data
+data = airlines_oil #change this to run on different sets of data
 pca = PCA()
 
 PCs = {}
@@ -88,7 +88,7 @@ for i in range(len(data)):
     var_exp_r[y_label] = pca.explained_variance_ratio_
 
 # %% PLOT THE DATA
-symbol = "CVX"
+symbol = data[0]
 corrs = round(
     PCs[symbol].corrwith(
         returns[outlier_flag.OUT==False][symbol].reset_index(drop=True)
