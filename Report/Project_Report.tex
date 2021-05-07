@@ -26,13 +26,23 @@ https://github.com/DominickH20/statistical-mean-reversion}
 
 \begin{abstract}
 \noindent
-\textbf{DOT THIS}
-\lipsum[1]
+This paper demonstrates the development and analysis of two forms of statistical
+mean reversion (statistical arbitrage) strategies for trading airline and oil company
+stocks. The first strategy is a pairwise model that leverages correlations among
+pairs of stocks to trade. It is fit using OLS and performs rather well out of sample.
+The second strategy is a basket model that leverages correlations among baskets of 
+securities. To handle the multicollinearity problem within a basket, a principal component
+decomposition is applied to the data before fitting with OLS. The basket strategy suffers 
+from higher
+volatility and noise in the signal, but still demonstrates the presence of a signal. 
+The deterioration found in the basket strategy relative to the pairwise strategy is likely
+attributable to the higher dimensionality of the data and distributional nuances in the
+data that prohibit effective feature selection. 
 \end{abstract}
 
 \newpage
 \section{Introduction}
-The intent of this project is to build a reliable statistical mean reversion trading strategy
+The intent of this paper is to showcase a reliable statistical mean reversion trading strategy
 on correlated baskets of stocks, specifically airline and oil company stocks. Airline companies
 are exposed to very similar pools of risk, and the same can be said for oil companies. Because
 of this, one would expect their stock prices to move together when these underlying risk
@@ -444,7 +454,21 @@ very well be the case that it is not reasonable to make convergence bets in the 
 defined by the test set.
 
 \section{Conclusion}
-highlight what was accomplished and what takeaways and next steps are
+This paper highlights two statistical mean reversion trading strategies and evaluates
+them on their peak signal profit or loss. The simpler pairwise trading strategy 
+outperformed the basket strategy that utilized a larger set of features and principal
+component analysis to preprocess and feature select these features. On the surface, this is a
+counterintuitive result because one might believe that more data allows for better 
+models. However, the deterioration of the basket strategy indicates the potentially
+problematic effects of higher dimensional data. In order to achieve comparable quality
+and interpretability in results, one needs exponentially cleaner data that 
+is analyzed in a substantially more rigourous fashion. 
+
+This type of mean reverting signal shows promise, and the next steps for this 
+analysis will likely be an implementation of this strategy in a backtest or 
+simulation context. It is important to note that any positive results in this 
+paper do not guarantee positive results while trading live, so readers should
+exercise caution if they decide to implement any of the ideas discussed in this paper.
 
 \newpage
 \section{Appendix}
