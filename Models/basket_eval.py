@@ -85,9 +85,11 @@ fig, axs = plt.subplots(1,1, figsize=figsize)
 sns.heatmap(round(buy_mat.T,2), annot=True, ax=axs, cmap = cmap, fmt='g')
 axs.set_title("0 Threshold PnL - Buy Side")
 axs.set_xlabel("Traded Symbol")
+fig.savefig('../Figures/basket_buy_pnl.png', pad_inches=0, bbox_inches='tight')
 
 fig, axs = plt.subplots(1,1, figsize=figsize)
 sns.heatmap(round(sell_mat.T,2), annot=True, ax=axs, cmap = cmap, fmt='g')
 axs.set_title("0 Threshold PnL - Sell Side")
 axs.set_xlabel("Traded Symbol")
+fig.savefig('../Figures/basket_sell_pnl.png', pad_inches=0, bbox_inches='tight')
 # %%

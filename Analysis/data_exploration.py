@@ -70,11 +70,26 @@ outlier_flag_full = outlier_flag[:-1]
 #PLOTTING
 fig, axs = plt.subplots(1,1, figsize=(8,8))
 x_sym = "DAL"
-y_sym = "ALGT"
-axs.scatter(x=bars[x_sym]["return"], y=bars[y_sym]["return"], color=cmap(0.0), s=1)
+y_sym = "AAL"
+axs.scatter(x=returns[x_sym], 
+y=returns[y_sym], color=cmap(0.0), s=1)
 axs.set_xlabel(x_sym)
 axs.set_ylabel(y_sym)
 axs.set_title("Return Plot")
+fig.savefig('../Figures/return_plot_out.png', 
+    pad_inches=0.05, bbox_inches='tight')
+
+fig, axs = plt.subplots(1,1, figsize=(8,8))
+x_sym = "DAL"
+y_sym = "AAL"
+axs.scatter(x=returns[outlier_flag.OUT==False][x_sym], 
+y=returns[outlier_flag.OUT==False][y_sym], color=cmap(0.3), s=1)
+axs.set_xlabel(x_sym)
+axs.set_ylabel(y_sym)
+axs.set_title("Return Plot (No Outliers)")
+fig.savefig('../Figures/return_plot_no_out.png', 
+    pad_inches=0.05, bbox_inches='tight')
+
 
 # %%
 # #plot to check - LONG
@@ -100,10 +115,14 @@ import seaborn as sns
 fig, axs = plt.subplots(1,1, figsize=(12,12))
 sns.heatmap(round(returns.corr(),2), square=True, annot=True, ax=axs, cmap=cmap)
 axs.set_title("Correlation Coefficients")
+fig.savefig('../Figures/pair_corr_out.png', 
+    pad_inches=0.05, bbox_inches='tight')
 
 fig, axs = plt.subplots(1,1, figsize=(12,12))
 sns.heatmap(round(returns[outlier_flag.OUT==False].corr(),2), square=True, annot=True, ax=axs,cmap=cmap)
 axs.set_title("Correlation Coefficients (No Outlier)")
+fig.savefig('../Figures/pair_corr_no_out.png', 
+    pad_inches=0.05, bbox_inches='tight')
 
 
 # %%
@@ -147,10 +166,14 @@ slopes = pd.DataFrame(slopes, columns=symbols, index=symbols)
 fig, axs = plt.subplots(1,1, figsize=(12,12))
 sns.heatmap(round(intercepts,2), square=True, annot=True, ax=axs, cmap=cmap)
 axs.set_title("Intercepts")
+fig.savefig('../Figures/pair_reg_intercept.png', 
+    pad_inches=0.05, bbox_inches='tight')
 
 fig, axs = plt.subplots(1,1, figsize=(12,12))
 sns.heatmap(round(slopes,2), square=True, annot=True, ax=axs, cmap=cmap)
 axs.set_title("Slopes")
+fig.savefig('../Figures/pair_reg_slope.png', 
+    pad_inches=0.05, bbox_inches='tight')
 
 
 
@@ -181,20 +204,26 @@ axs.set_title("Slopes")
 # axs.set_title("Slope Significance")
 
 # %%
-y_sym = "DAL"
-x_sym = "ALGT"
+y_sym = "ALGT"
+x_sym = "DAL"
 slr = models[y_sym][x_sym]
 line_x = np.linspace(-.05, .05, 1000)
 line_y = slr.params[0] + slr.params[1]*line_x
 
 #THE LINE IS BIASED, WANT TO FIGURE OUT WHY
 # THIS IS BECAUSE OLS FITS on Y, USE ODR FOR PERPENDICULAR RESIDUALS
-plt.scatter(
+fig, axs = plt.subplots(1,1, figsize=(8,8))
+axs.scatter(
     returns[outlier_flag.OUT==False][x_sym],
     returns[outlier_flag.OUT==False][y_sym],
-    s=1, color=cmap(0.0)
+    s=1, color=cmap(0.66)
 )
-plt.plot(line_x, line_y, color="black")
+axs.plot(line_x, line_y, color="black")
+axs.set_xlabel(x_sym)
+axs.set_ylabel(y_sym)
+axs.set_title("Return Plot with Regression Line")
+fig.savefig('../Figures/return_plot_wReg.png', 
+    pad_inches=0.05, bbox_inches='tight')
 
 #%%
 # FIT FUTURE RETURN ON RESIDUALS
@@ -235,20 +264,33 @@ r_slopes = pd.DataFrame(r_slopes, columns=symbols, index=symbols)
 fig, axs = plt.subplots(1,1, figsize=(12,12))
 sns.heatmap(round(r_intercepts,2), square=True, annot=True, ax=axs, cmap=cmap)
 axs.set_title("Resid Intercepts")
+fig.savefig('../Figures/pair_resid_reg_intercept.png', 
+    pad_inches=0.05, bbox_inches='tight')
 
 fig, axs = plt.subplots(1,1, figsize=(12,12))
 sns.heatmap(round(r_slopes,2), square=True, annot=True, ax=axs, cmap=cmap)
 axs.set_title("Resid Slopes")
+fig.savefig('../Figures/pair_resid_reg_slope.png', 
+    pad_inches=0.05, bbox_inches='tight')
 
 # %%
-y_sym = "DAL"
-x_sym = "ALGT"
+y_sym = "ALGT"
+x_sym = "DAL"
 slr = resid_models[y_sym][x_sym]
 line_x = np.linspace(-.05, .05, 1000)
 line_y = slr.params[0] + slr.params[1]*line_x
-plt.scatter(
+
+fig, axs = plt.subplots(1,1, figsize=(8,8))
+axs.scatter(
     models[x_sym][y_sym].resid[:-1], 
     full_data[outlier_flag_full.OUT==False][y_sym+"_fut"],
-    s=1, color=cmap(0.0)
+    s=1, color=cmap(.9)
 )
-plt.plot(line_x, line_y, color="black")
+axs.plot(line_x, line_y, color="black")
+axs.set_xlabel(x_sym)
+axs.set_ylabel(y_sym)
+axs.set_title("Future Return with Residual Regression Line")
+fig.savefig('../Figures/return_plot_wResidReg.png', 
+    pad_inches=0.05, bbox_inches='tight')
+
+# %%

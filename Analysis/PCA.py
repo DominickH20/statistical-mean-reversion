@@ -66,7 +66,7 @@ print(outlier_flag.values.shape)
 print(outlier_flag[outlier_flag.OUT==False].values.shape)
 
 #%% COMPUTE PCA 
-data = airlines_oil #change this to run on different sets of data
+data = symbols #change this to run on different sets of data
 pca = PCA()
 
 PCs = {}
@@ -105,6 +105,9 @@ for i in range(2):
         axs[i][j].set_title("PC"+str(2*i+j+1)+" vs " + symbol + " Return (r=" + str(corrs[2*i+j]) + ")")
         axs[i][j].set_xlabel("PC"+str(2*i+j+1))
         axs[i][j].set_ylabel(symbol + " Return")
+fig.savefig('../Figures/PCA_plot.png', 
+pad_inches=0.05, bbox_inches='tight')
+
 
 # %%
 pc_pves = pd.DataFrame(index=["PC" + str(i) for i in range(1,len(data))])
@@ -122,11 +125,15 @@ fig, axs = plt.subplots(1,1, figsize=(12,8))
 sns.heatmap(round(pc_pves,3), annot=True, ax=axs, cmap = cmap)
 axs.set_title("PC Percentage of Variance Explained")
 axs.set_xlabel("Symbol Held Out")
+fig.savefig('../Figures/PCA_pve.png', 
+pad_inches=0.05, bbox_inches='tight')
 
 fig, axs = plt.subplots(1,1, figsize=(12,8))
 sns.heatmap(round(abs(pc_corrs),3), annot=True, ax=axs, cmap = cmap)
 axs.set_title("PC Correlations")
 axs.set_xlabel("Response Variable")
+fig.savefig('../Figures/PCA_corr_resp.png', 
+pad_inches=0.05, bbox_inches='tight')
 
 #%% FIT OLS REGRESSION MODEL ON PCs
 import statsmodels.api as sm
@@ -165,6 +172,8 @@ fig, axs = plt.subplots(1,1, figsize=(12,8))
 sns.heatmap(round(abs(reg_pc1_params),3), annot=True, ax=axs, cmap = cmap)
 axs.set_title("OLS PC1 Regression Coefficients")
 axs.set_xlabel("Coefficient on PC")
+fig.savefig('../Figures/PC1_PCReg_coef.png', 
+pad_inches=0.05, bbox_inches='tight')
 
 #%% FIT OLS REGRESSION MODEL ON PCs
 reg_pc_models = {}
@@ -195,6 +204,8 @@ fig, axs = plt.subplots(1,1, figsize=(12,8))
 sns.heatmap(round(abs(reg_pc_params),3), annot=True, ax=axs, cmap = cmap)
 axs.set_title("OLS Full Regression Coefficients")
 axs.set_xlabel("Coefficient on PC")
+fig.savefig('../Figures/Full_PCReg_coef.png', 
+pad_inches=0.05, bbox_inches='tight')
 
 #%%
 from sklearn import linear_model
@@ -226,6 +237,8 @@ fig, axs = plt.subplots(1,1, figsize=(12,8))
 sns.heatmap(round(abs(reg_pc_params),3), annot=True, ax=axs, cmap = cmap)
 axs.set_title("Lasso Regression Coefficients")
 axs.set_xlabel("Coefficient on PC")
+fig.savefig('../Figures/Lasso_PCReg_coef.png', 
+pad_inches=0.05, bbox_inches='tight')
 
 
 #%%

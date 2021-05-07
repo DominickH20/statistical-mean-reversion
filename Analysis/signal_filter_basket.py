@@ -33,7 +33,7 @@ if EVAL_TYPE == "TEST":
 else:
     predictions = pd.read_csv('../Models/model_out/Full_PCA_Predict_Train.csv')
 
-fcast = "SPY"
+fcast = "ALGT"
 
 corr_trade = pd.DataFrame()
 corr_trade["datetime"] = bars[fcast]["datetime"]
@@ -66,6 +66,7 @@ axs.legend()
 axs.set_xlabel("Signal Threshold")
 axs.set_ylabel("Sum of Markouts")
 axs.set_title("PnL Curve for buying " + fcast + " on PCs of Full Data Returns")
+fig.savefig('../Figures/basket_Pnl_Curve_buy_'+fcast+'.png', pad_inches=0.05, bbox_inches='tight')
 
 # %%
 #if signal is high, sell, else buy
@@ -87,4 +88,6 @@ axs.legend()
 axs.set_xlabel("Signal Threshold")
 axs.set_ylabel("Sum of Markouts")
 axs.set_title("PnL Curve for selling " + fcast + " on PCs of Full Data Returns")
+fig.savefig('../Figures/basket_Pnl_Curve_sell_'+fcast+'.png', pad_inches=0.05, bbox_inches='tight')
+
 # %%

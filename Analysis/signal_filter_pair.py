@@ -15,6 +15,7 @@ symbols = [
     "SPY", "TLT" #market and rates
 ]
 
+EVAL_TYPE="TEST"
 test_start = 16078
 
 bars={}
@@ -22,7 +23,9 @@ for symbol in symbols:
     bars[symbol] = pd.read_csv(
         "../Data/cleaned/{s}_hourly_bars.csv".format(s=symbol), 
         parse_dates=["datetime"]
-    )
+    )[
+        (test_start if EVAL_TYPE=="TEST" else 0):(None if EVAL_TYPE=="TEST" else test_start)
+    ].reset_index(drop=True)
 
 slopes = pd.read_csv("../Models/model_out/pairwise_slopes.csv", index_col=0)
 intercepts = pd.read_csv("../Models/model_out/pairwise_intercepts.csv", index_col=0)
@@ -63,6 +66,9 @@ axs.legend()
 axs.set_xlabel("Signal Threshold")
 axs.set_ylabel("Sum of Markouts")
 axs.set_title("PnL Curve for buying " + fcast + " on " + using + " Returns")
+fig.savefig('../Figures/pair_Pnl_Curve_buy_'+fcast+'_on_'+using+'.png', 
+    pad_inches=0.05, bbox_inches='tight')
+
 
 # %%
 #if signal is high, sell, else buy
@@ -84,3 +90,5 @@ axs.legend()
 axs.set_xlabel("Signal Threshold")
 axs.set_ylabel("Sum of Markouts")
 axs.set_title("PnL Curve for selling " + fcast + " on " + using + " Returns")
+fig.savefig('../Figures/pair_Pnl_Curve_sell_'+fcast+'_on_'+using+'.png', 
+    pad_inches=0.05, bbox_inches='tight')

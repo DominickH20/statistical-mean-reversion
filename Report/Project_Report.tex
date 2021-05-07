@@ -2,6 +2,7 @@
 \usepackage{amsmath}
 \usepackage{amssymb}
 \usepackage{graphicx}
+\usepackage{subcaption}
 \usepackage[utf8]{inputenc}
 \usepackage[table]{xcolor}
 \usepackage[margin=1.2in]{geometry}
@@ -84,8 +85,21 @@ other security, $S$, then the most recent bar in $S$ was backfilled in its place
 
 There were
 also several outliers present in the data that would obstruct the fitting of linear models. 
-\textbf{PLOT HERE} In 
-order for the models to be able to learn the usual relationship between the securities, I used
+\begin{figure}[h!]
+  \centering
+  \begin{subfigure}{.5\textwidth}
+    \centering
+    \includegraphics[width=.95\linewidth]{../Figures/return_plot_out.png}
+    \caption{Returns with Outliers}
+  \end{subfigure}%
+  \begin{subfigure}{.5\textwidth}
+    \centering
+    \includegraphics[width=.95\linewidth]{../Figures/return_plot_no_out.png}
+    \caption{Returns with Outliers Removed}
+  \end{subfigure}
+  \caption{Impact of Outliers on Data}
+\end{figure}
+In order for the models to be able to learn the usual relationship between the securities, I used
 the middle 99\% of data \textit{for training only}. The models were still evaluated on train and
 test data that included outliers. The outlier removal was solely done to improve the fit of the
 linear models.
@@ -101,7 +115,7 @@ $$a_t = \frac{P_t - P_{t-1}}{P_{t-1}}$$
 Normal approximations
 have been used for asset returns on the monthly time scale, however, over short intervals this
 assumption breaks down. The hourly returns used in this study are abundant close to 0 and 
-extreme returns occur with greater frequency than under normality assumptions. \textbf{PLOT?}
+extreme returns occur with greater frequency than under normality assumptions.
 Despite this fact, OLS is a \textit{BLUE} estimator, so we can still confidently estimate 
 a line despite the distribution not being normal. 
 \subsubsection{Markouts}
@@ -120,13 +134,66 @@ exact opposites (since the asset can only move one direction). A good trading si
 that is able to separate positive from negative markouts. 
 
 \section{Pairwise Mean Reversion}
-Overview Here
+As mentioned in the introduction, airline companies are exposed to similar pools of
+risk. Oil companies are also exposed to similar pools of risk. Airline and oil companies
+are both exposed to the price risk of oil itself, so it would stand to reason that the
+stock prices of companies in this sector would move together. This assumption underpins
+the pairwise mean reversion models presented in this section.
 \subsection{Pairwise Correlations}
-Include plots of correlations, no outliers
+To get an idea of the relationships present among the companies in the data set, a pairwise
+correlation analysis was conducted on the hourly returns of each of the securities.
+\begin{figure}[h!]
+  \centering
+    \includegraphics[width=.6\linewidth]{../Figures/pair_corr_no_out.png}
+    \caption{Pairwise Correlation - Outliers Removed}
+\end{figure}
+We can see from Figure 1 above and section 6.3 in the appendix that the outliers in the 
+data set had a noticeable positive impact on the correlations between the securities,
+so for training purposes, it was appropriate to remove them. There are clear sections
+of correlatedness in Figure 2 above. We can see that the 5 airline companies are together
+correlated, while the same can be said for the 5 oil companies in the data set. There is also
+some positive correlation between the companies in the data set and the S\&P 500 as well as some
+negative correlation with price of bonds.
+
 \subsection{Pairwise OLS}
+With this understanding of the correlations between the data as well as the fact that
+the outlier free return data exhibits ellipsoidal linear relationships, it became clear
+that OLS would be a good model for this data. OLS was able to fit lines to the data well,
+however, because the data fail to satisfy some assumptions of OLS, inference on the 
+OLS parameters was not possible. The coefficients of the pairwise OLS model can be found
+in Figure 3(a).
+\begin{figure}[h!]
+  \centering
+  \begin{subfigure}{.5\textwidth}
+    \centering
+    \includegraphics[width=.95\linewidth]{../Figures/pair_reg_slope.png}
+    \caption{Model Slope Coefficient}
+  \end{subfigure}%
+  \begin{subfigure}{.5\textwidth}
+    \centering
+    \includegraphics[width=.95\linewidth]{../Figures/pair_resid_reg_slope.png}
+    \caption{Residual Slope Coefficient}
+  \end{subfigure}
+  \caption{Pairwise OLS}
+\end{figure}
+We see that the the strength of the slope coefficients lines up well with the strength of the
+pairwise correlation between the assets. 
+
+\begin{figure}[h!]
+  \centering
+  \begin{subfigure}{.5\textwidth}
+    \centering
+    \includegraphics[width=.95\linewidth]{../Figures/return_plot_wReg.png}
+    \caption{OLS Fit on No Outlier Data}
+  \end{subfigure}%
+  \begin{subfigure}{.5\textwidth}
+    \centering
+    \includegraphics[width=.95\linewidth]{../Figures/return_plot_wResidReg.png}
+    \caption{Future Returns Regressed on Model residuals}
+  \end{subfigure}
+  \caption{Return Plots with Regression}
+\end{figure}
 Include regression plot, coefficient plots
-\subsection{Residual OLS for Forecasting}
-Can include the coefficient plot if I want to, Good intuition but not testable
 \subsection{Profit and Loss Analysis}
 Introduce cumulative markout sums and parameter tuning.
 include the PNl curves, and some pnl heatmaps
@@ -161,6 +228,7 @@ highlight what was accomplished and what takeaways and next steps are
 \newpage
 \section{Appendix}
 
+\subsection{RMSE for PC Regression Models}
 \begin{table}[!htb]
     \begin{minipage}{.5\linewidth}
       \caption{Airline PC Regression RMSE}
@@ -230,5 +298,218 @@ highlight what was accomplished and what takeaways and next steps are
         \end{tabular}
     \end{minipage} 
 \end{table}
+
+\newpage
+\subsection{Return Plots}
+\begin{figure}[h!]
+  \centering
+  \begin{subfigure}{.5\textwidth}
+    \centering
+    \includegraphics[width=.95\linewidth]{../Figures/return_plot_out.png}
+    \caption{Returns with Outliers}
+  \end{subfigure}%
+  \begin{subfigure}{.5\textwidth}
+    \centering
+    \includegraphics[width=.95\linewidth]{../Figures/return_plot_no_out.png}
+    \caption{Returns with Outliers Removed}
+  \end{subfigure}
+  \caption{Impact of Outliers on Data}
+\end{figure}
+
+\begin{figure}[h!]
+  \centering
+  \begin{subfigure}{.5\textwidth}
+    \centering
+    \includegraphics[width=.95\linewidth]{../Figures/return_plot_wReg.png}
+    \caption{OLS Fit on No Outlier Data}
+  \end{subfigure}%
+  \begin{subfigure}{.5\textwidth}
+    \centering
+    \includegraphics[width=.95\linewidth]{../Figures/return_plot_wResidReg.png}
+    \caption{Future Returns Regressed on Model residuals}
+  \end{subfigure}
+  \caption{Return Plots with Regression}
+\end{figure}
+
+\newpage
+\subsection{Correlations}
+\begin{figure}[h!]
+  \centering
+    \includegraphics[width=.5\linewidth]{../Figures/pair_corr_out.png}
+    \caption{Pairwise Correlation - Outliers Present}
+\end{figure}
+\begin{figure}[h!]
+  \centering
+    \includegraphics[width=.5\linewidth]{../Figures/pair_corr_no_out.png}
+    \caption{Pairwise Correlation - Outliers Removed}
+\end{figure}
+
+\newpage
+\subsection{Principal Component Analysis}
+\begin{figure}[h!]
+  \centering
+    \includegraphics[width=.8\linewidth]{../Figures/PCA_plot.png}
+    \caption{Decomposition Plot}
+\end{figure}
+\begin{figure}[h!]
+  \centering
+  \begin{subfigure}{.5\textwidth}
+    \centering
+    \includegraphics[width=.95\linewidth]{../Figures/PCA_pve.png}
+    \caption{PCA Percentage of Variance Explained}
+  \end{subfigure}%
+  \begin{subfigure}{.5\textwidth}
+    \centering
+    \includegraphics[width=.95\linewidth]{../Figures/PCA_corr_resp.png}
+    \caption{Principal Component Correlation with Response}
+  \end{subfigure}
+  \caption{PCA Metrics}
+\end{figure}
+
+\newpage
+\subsection{Regression Coefficients}
+
+\subsubsection{Pairwise Regression}
+\begin{figure}[h!]
+  \centering
+  \begin{subfigure}{.5\textwidth}
+    \centering
+    \includegraphics[width=.95\linewidth]{../Figures/pair_reg_slope.png}
+    \caption{Slope Coefficient}
+  \end{subfigure}%
+  \begin{subfigure}{.5\textwidth}
+    \centering
+    \includegraphics[width=.95\linewidth]{../Figures/pair_reg_intercept.png}
+    \caption{Intercept}
+  \end{subfigure}
+  \caption{Pairwise Regression}
+\end{figure}
+
+\subsubsection{Pairwise Residual Regression}
+\begin{figure}[h!]
+  \centering
+  \begin{subfigure}{.5\textwidth}
+    \centering
+    \includegraphics[width=.95\linewidth]{../Figures/pair_resid_reg_slope.png}
+    \caption{Slope Coefficient}
+  \end{subfigure}%
+  \begin{subfigure}{.5\textwidth}
+    \centering
+    \includegraphics[width=.95\linewidth]{../Figures/pair_resid_reg_intercept.png}
+    \caption{Intercept}
+  \end{subfigure}
+  \caption{Pairwise Residual Regression}
+\end{figure}
+
+\subsubsection{Principal Component Regression}
+\begin{figure}[h!]
+  \centering
+    \includegraphics[width=.4\linewidth]{../Figures/PC1_PCReg_coef.png}
+    \caption{PC1 OLS Regression}
+\end{figure}
+\begin{figure}[h!]
+    \centering
+    \includegraphics[width=.4\linewidth]{../Figures/Full_PCReg_coef.png}
+    \caption{Full PC OLS Regression}
+\end{figure}
+\begin{figure}[h!]
+    \centering
+    \includegraphics[width=.4\linewidth]{../Figures/Lasso_PCReg_coef.png}
+    \caption{Lasso PC Regression}
+\end{figure}
+
+\newpage
+\subsection{Profit and Loss Signal Curves}
+\begin{figure}[h!]
+  \centering
+  \begin{subfigure}{.5\textwidth}
+    \centering
+    \includegraphics[width=.95\linewidth]{../Figures/pair_Pnl_Curve_buy_ALGT_on_DAL.png}
+    \caption{Buy Side PnL}
+  \end{subfigure}%
+  \begin{subfigure}{.5\textwidth}
+    \centering
+    \includegraphics[width=.95\linewidth]{../Figures/pair_Pnl_Curve_sell_ALGT_on_DAL.png}
+    \caption{Sell Side PnL}
+  \end{subfigure}
+  \caption{Pairwise Pnl Curves - ALGT}
+\end{figure}
+
+\begin{figure}[h!]
+  \centering
+  \begin{subfigure}{.5\textwidth}
+    \centering
+    \includegraphics[width=.95\linewidth]{../Figures/basket_Pnl_Curve_buy_ALGT.png}
+    \caption{Buy Side PnL}
+  \end{subfigure}%
+  \begin{subfigure}{.5\textwidth}
+    \centering
+    \includegraphics[width=.95\linewidth]{../Figures/basket_Pnl_Curve_sell_ALGT.png}
+    \caption{Sell Side PnL}
+  \end{subfigure}
+  \caption{Basket Pnl Curves - ALGT}
+\end{figure}
+
+\newpage
+\subsection{Profit and Loss over Markout Horizons}
+\begin{figure}[h!]
+  \centering
+  \begin{subfigure}{.5\textwidth}
+    \centering
+    \includegraphics[width=.95\linewidth]{../Figures/pair_buy_pnl_1h.png}
+    \caption{Buy Side PnL}
+  \end{subfigure}%
+  \begin{subfigure}{.5\textwidth}
+    \centering
+    \includegraphics[width=.95\linewidth]{../Figures/pair_sell_pnl_1h.png}
+    \caption{Sell Side PnL}
+  \end{subfigure}
+  \caption{1-Hour Markouts}
+\end{figure}
+
+\begin{figure}[h!]
+  \centering
+  \begin{subfigure}{.5\textwidth}
+    \centering
+    \includegraphics[width=.95\linewidth]{../Figures/pair_buy_pnl_2h.png}
+    \caption{Buy Side PnL}
+  \end{subfigure}%
+  \begin{subfigure}{.5\textwidth}
+    \centering
+    \includegraphics[width=.95\linewidth]{../Figures/pair_sell_pnl_2h.png}
+    \caption{Sell Side PnL}
+  \end{subfigure}
+  \caption{2-Hour Markouts}
+\end{figure}
+
+\begin{figure}[h!]
+  \centering
+  \begin{subfigure}{.5\textwidth}
+    \centering
+    \includegraphics[width=.95\linewidth]{../Figures/pair_buy_pnl_4h.png}
+    \caption{Buy Side PnL}
+  \end{subfigure}%
+  \begin{subfigure}{.5\textwidth}
+    \centering
+    \includegraphics[width=.95\linewidth]{../Figures/pair_sell_pnl_4h.png}
+    \caption{Sell Side PnL}
+  \end{subfigure}
+  \caption{4-Hour Markouts}
+\end{figure}
+
+\begin{figure}[h!]
+  \centering
+  \begin{subfigure}{.5\textwidth}
+    \centering
+    \includegraphics[width=.95\linewidth]{../Figures/basket_buy_pnl.png}
+    \caption{Buy Side PnL}
+  \end{subfigure}%
+  \begin{subfigure}{.5\textwidth}
+    \centering
+    \includegraphics[width=.95\linewidth]{../Figures/basket_sell_pnl.png}
+    \caption{Sell Side PnL}
+  \end{subfigure}
+  \caption{Basket Model PnL}
+\end{figure}
 
 \end{document}
