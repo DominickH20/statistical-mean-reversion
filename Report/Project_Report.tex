@@ -26,6 +26,7 @@ https://github.com/DominickH20/statistical-mean-reversion}
 
 \begin{abstract}
 \noindent
+\textbf{DOT THIS}
 \lipsum[1]
 \end{abstract}
 
@@ -174,11 +175,18 @@ in Figure 3(a).
     \includegraphics[width=.95\linewidth]{../Figures/pair_resid_reg_slope.png}
     \caption{Residual Slope Coefficient}
   \end{subfigure}
-  \caption{Pairwise OLS}
+  \caption{Pairwise OLS, Y Axis Response}
 \end{figure}
 We see that the the strength of the slope coefficients lines up well with the strength of the
-pairwise correlation between the assets. 
-
+pairwise correlation between the assets. The intercept term for these models were essentially
+all zero. This can be seen in section 6.5. As defined in section 1.1, the idea behind
+a statistical mean reverting trading strategy is to make bets on convergence to a forecasted
+mean return. In this case, the mean return is the return for company $Y$ predicted 
+at time $t$ using company $X$'s return under the pairwise model. The model makes money 
+if when there is a negative residual on the model, the future return is positive, and
+likewise if there is a positive residual on the model, the future return is negative.
+In order to test if this is possible, we can run a regression on model residuals to 
+future returns. The results of this can be found in Figure 3(b).
 \begin{figure}[h!]
   \centering
   \begin{subfigure}{.5\textwidth}
@@ -193,26 +201,174 @@ pairwise correlation between the assets.
   \end{subfigure}
   \caption{Return Plots with Regression}
 \end{figure}
-Include regression plot, coefficient plots
-\subsection{Profit and Loss Analysis}
-Introduce cumulative markout sums and parameter tuning.
-include the PNl curves, and some pnl heatmaps
-comment on allegiant
+We see that there are some pairs with negative coefficients, which indicates that 
+there is a relationship present. Such an example is shown in Figure 4. On the left
+we see the regression model over the training set, while on the right we see the 
+future returns regression model. There is a distinct downward slope in the model, but 
+again, because the data fails OLS assumptions, we cannot tell whether the coefficient
+is significant. Analysis on whether this strategy is good or not is presented in the
+following section.
 
-\section{Principal Component Basket Mean Reversion}
-overview of goal and intuition here
-\subsection{Dimensionality Reduction}
-variance explained - show plots of first 4 PCs
-correlation with returns
-anomalies with coefficients
+\subsection{Profit and Loss Analysis}
+In order to assess whether the trading strategy is profitable, I introduce the notion
+of a Profit and Loss (Pnl) Curve derived from cumulative markouts of trades taken
+according to some signal parameter. Recalling the definition of markouts from section
+1.3.2, as well as the fact that our trading signal for this model is the size 
+of the model residual, we can generate a PnL curve on the \textit{test} set.
+We define this as follows:
+$$\mathrm{PnL}(\lambda)_k^B = \sum_{t=1}^n \Phi_B(\lambda, r_t) M_{t,k}^B
+\quad
+\Phi_B(\lambda, r_t) = \begin{cases}
+  1 \text { if } r_t < \lambda\\
+  0 \text { if } r_t < \lambda  
+\end{cases}$$
+$$\mathrm{PnL}(\lambda)_k^S = \sum_{t=1}^n \Phi_S(\lambda, r_t) M_{t,k}^S
+\quad
+\Phi_S(\lambda, r_t) = \begin{cases}
+  1 \text { if } r_t > \lambda\\
+  0 \text { if } r_t > \lambda  
+\end{cases}$$
+Where $\Phi$ is an indicator function to determine how the residual relates to the
+signal threshold $\lambda$. The curves for buying and selling PnL can be seen below
+in Figure 5. I chose a signal threshold of $\lambda=0$ by observing the peaks
+of these curves on \textit{train} data, and they are applied here on \textit{test}
+data.
+\begin{figure}[h!]
+  \centering
+  \begin{subfigure}{.5\textwidth}
+    \centering
+    \includegraphics[width=.95\linewidth]{../Figures/pair_Pnl_Curve_buy_ALGT_on_DAL.png}
+    \caption{Buy Side PnL}
+  \end{subfigure}%
+  \begin{subfigure}{.5\textwidth}
+    \centering
+    \includegraphics[width=.95\linewidth]{../Figures/pair_Pnl_Curve_sell_ALGT_on_DAL.png}
+    \caption{Sell Side PnL}
+  \end{subfigure}
+  \caption{Pairwise Pnl Curves - ALGT}
+\end{figure}
+The shape of the curve follows from intuition, at the left end of the buying curve, there
+are no data points with a sufficiently negative residual for us to buy, so the PnL is 0,
+while at the right end, we are making every possible trade. Because the market went
+up for a large part of 2020 and 2021 (except for the March 2020 crash), it makes sense
+that we come out positive if we buy all the time. 
+We can see that there are noticeable peaks at 0 for both buying and selling PnL, which
+further justifies the choice of 0 as a threshold parameter. The PnL reported for a
+0 threshold is reported in Figure 6 below.
+\begin{figure}[h!]
+  \centering
+  \begin{subfigure}{.5\textwidth}
+    \centering
+    \includegraphics[width=.95\linewidth]{../Figures/pair_buy_pnl_1h.png}
+    \caption{Buy Side PnL}
+  \end{subfigure}%
+  \begin{subfigure}{.5\textwidth}
+    \centering
+    \includegraphics[width=.95\linewidth]{../Figures/pair_sell_pnl_1h.png}
+    \caption{Sell Side PnL}
+  \end{subfigure}
+  \caption{1-Hour Markouts}
+\end{figure}
+Surprisingly,most of the pairs are profitable, with Allegiant Airlines standing out 
+as one of the most profitable companies to trade, likely due to its volatility, which
+can be seen in Figure 4(a). The ellipse is very steep, meaning that for
+returns in Delta Airlines stock, Allegiant stock is quite volatile.
+
+\section{Basket Mean Reversion using Principal Components}
+Having seen the success of the pairwise analyses and the positive markouts for 
+a $\lambda=0$ signal, one might wonder what improvements could be had by including
+more predictors in the regression models. However, the returns of the stocks in the 
+data set are correlated (Figure 2) and in some cases would be prohibitively multicollinear under
+and OLS model. In order to solve this problem, we can transform the returns into
+orthogonal principal components and regress on the transformed data. 
+
+\subsection{Orthogonal Transformation}
+In order to prevent data leakage, the target variable was held out of the data set before 
+a transformation was applied. I examined many possible subsets of data over which 
+diagonalization and regression was performed (airlines on airlines, oil on oil, all on all).
+The best results from an RMSE perspective mandated that all of the stocks (except for the 
+target) be included in the principal component transformation. This can be seen in section
+6.1 and will be discussed further in section 3.2. The following analysis applies
+to the principal components extracted over all the data. 
+
+\begin{figure}[h!]
+  \centering
+  \begin{subfigure}{.5\textwidth}
+    \centering
+    \includegraphics[width=.95\linewidth]{../Figures/PCA_pve.png}
+    \caption{PCA Percentage of Variance Explained}
+  \end{subfigure}%
+  \begin{subfigure}{.5\textwidth}
+    \centering
+    \includegraphics[width=.95\linewidth]{../Figures/PCA_corr_resp.png}
+    \caption{Principal Component Correlation with Response}
+  \end{subfigure}
+  \caption{PCA Metrics}
+\end{figure}
+In Figure 7, we can see the results of the principal component decomposition. As expected,
+due to the correlations in the data, we see that the first principal component explains
+a significant proportion of the variance. For smaller subsets of data, say airlines,
+the first principal component explained upwards of 60\% of the variance. The 
+interesting observation however, is that the returns of the held out security do
+not always have the highest correlation with the first principal component. For 
+example, Chevron (CVX) and Exxon Mobil (XOM) seem to correlate with the 9th principal
+component. This is especially interesting because from a business standpoint, CVX
+and XOM are very similar.
+\begin{figure}[h!]
+  \centering
+    \includegraphics[width=.6\linewidth]{../Figures/PCA_plot.png}
+    \caption{Decomposition Plot}
+\end{figure}
+In Figure 8 above, we can see the plot of American Airlines returns against the 
+first 4 principal components of the other 11 stocks. We can also see there that
+there appears to be a stronger relationship between AAL and PC2 than AAL and PC1.
+
 \subsection{Basket OLS}
+After fitting the principal componenst on \textit{train} data, and OLS model
+was run with the held out symbol as response and the principal components as 
+predictors.
+
 Describe fit and any coefficient plots here
 describe feature selection
-\subsection{Basket Lasso for Feature Selection}
+\begin{figure}[h!]
+  \centering
+  \includegraphics[width=.6\linewidth]{../Figures/Full_PCReg_coef.png}
+  \caption{Full PC OLS Regression}
+\end{figure}
+\subsubsection{Basket Lasso for Feature Selection}
 Omit this - mention briefly
+
 \subsection{Profit and Loss Analysis}
+\begin{figure}[h!]
+  \centering
+  \begin{subfigure}{.5\textwidth}
+    \centering
+    \includegraphics[width=.95\linewidth]{../Figures/basket_Pnl_Curve_buy_ALGT.png}
+    \caption{Buy Side PnL}
+  \end{subfigure}%
+  \begin{subfigure}{.5\textwidth}
+    \centering
+    \includegraphics[width=.95\linewidth]{../Figures/basket_Pnl_Curve_sell_ALGT.png}
+    \caption{Sell Side PnL}
+  \end{subfigure}
+  \caption{Basket Pnl Curves - ALGT}
+\end{figure}
 plots of some pnls, also buying and selling matrices
 Discuss why there is shortfall
+\begin{figure}[h!]
+  \centering
+  \begin{subfigure}{.5\textwidth}
+    \centering
+    \includegraphics[width=.95\linewidth]{../Figures/basket_buy_pnl.png}
+    \caption{Buy Side PnL}
+  \end{subfigure}%
+  \begin{subfigure}{.5\textwidth}
+    \centering
+    \includegraphics[width=.95\linewidth]{../Figures/basket_sell_pnl.png}
+    \caption{Sell Side PnL}
+  \end{subfigure}
+  \caption{Basket Model PnL}
+\end{figure}
 
 \section{Discussion}
 discuss shortfall of full strategy and why this might have occurred
