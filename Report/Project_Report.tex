@@ -231,13 +231,13 @@ $$\mathrm{PnL}(\lambda)_k^B = \sum_{t=1}^n \Phi_B(\lambda, r_t) M_{t,k}^B
 \quad
 \Phi_B(\lambda, r_t) = \begin{cases}
   1 \text { if } r_t < \lambda\\
-  0 \text { if } r_t < \lambda  
+  0 \text { if } r_t > \lambda  
 \end{cases}$$
 $$\mathrm{PnL}(\lambda)_k^S = \sum_{t=1}^n \Phi_S(\lambda, r_t) M_{t,k}^S
 \quad
 \Phi_S(\lambda, r_t) = \begin{cases}
   1 \text { if } r_t > \lambda\\
-  0 \text { if } r_t > \lambda  
+  0 \text { if } r_t < \lambda  
 \end{cases}$$
 Where $\Phi$ is an indicator function to determine how the residual relates to the
 signal threshold $\lambda$. The curves for buying and selling PnL can be seen below
