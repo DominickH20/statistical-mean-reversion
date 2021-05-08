@@ -49,7 +49,7 @@ of this, one would expect their stock prices to move together when these underly
 factors change. Because airlines are large consumers of oil, one might expect the airline and
 oil sectors to exhibit some relationship as well.
 \subsection{Statistical Mean Reversion}
-This project aims to develop a model for how these companies behave in relation
+This paper aims to develop a model for how these companies behave in relation
 to one another. This model can be thought of as the "mean" in this mean reversion concept. I
 utilize this model in the context of a trading strategy by computing the expected stock return 
 at time $t$, call it $e_t$. The expected return can be compared to the actual return, $a_t$
@@ -72,11 +72,12 @@ Devon Energy (DVN), SPDR S\&P 500 ETF, and iShares Treasury Bond ETF (TLT). Ther
 are 5 airline companies, 5 oil companies, and 2 market factors (SPY and TLT). The motivation
 behind including the market factors in this study is that they help parameterize what is going
 on in equity and debt markets at any given point in time.
-\subsubsection{Data Format}
-The data range from
-the start of 2016 to May 1st 2021. The years 2020 and 2021 are held out as test data while the
+The data range from January 1st
+2016 to May 1st 2021. The years 2020 and 2021 are held out as test data while the
 rest of the data is used to train the models. Given the occurrence of the pandemic in 2020,
-this is a particularly challenging test set. The data is organized in a \textit{bar} format.
+this is a particularly challenging test set. 
+\subsubsection{Data Format}
+The data is organized in a \textit{bar} format.
 Bars are a common way of aggregating financial data and are structured as follows:
 $$B_{S} = \begin{bmatrix} \mathrm{bar}_0, & \mathrm{bar}_1, & 
     ..., & \mathrm{bar}_n \end{bmatrix}$$
@@ -120,7 +121,7 @@ linear models.
 \subsubsection{Returns}
 Asset returns represent 
 a scaled first difference in the data, so they eliminate the serial component in the 
-time series data along with the complications associated with this. The actual return 
+time series data along with its associated complications. The actual return 
 as mentioned above can be defined as follows:
 $$a_t = \frac{P_t - P_{t-1}}{P_{t-1}}$$
 Normal approximations
@@ -188,7 +189,7 @@ in Figure 3(a).
   \caption{Pairwise OLS, Y Axis Response}
 \end{figure}
 We see that the the strength of the slope coefficients lines up well with the strength of the
-pairwise correlation between the assets. The intercept term for these models were essentially
+pairwise correlation between the assets. The intercept terms for these models were essentially
 all zero. This can be seen in section 6.5. As defined in section 1.1, the idea behind
 a statistical mean reverting trading strategy is to make bets on convergence to a forecasted
 mean return. In this case, the mean return is the return for company $Y$ predicted 
@@ -263,7 +264,7 @@ while at the right end, we are making every possible trade. Because the market w
 up for a large part of 2020 and 2021 (except for the March 2020 crash), it makes sense
 that we come out positive if we buy all the time. 
 We can see that there are noticeable peaks at 0 for both buying and selling PnL, which
-further justifies the choice of 0 as a threshold parameter. The PnL reported for a
+further justifies the choice of 0 as a threshold parameter. The PnL for a
 0 threshold is reported in Figure 6 below.
 \begin{figure}[h!]
   \centering
@@ -279,7 +280,7 @@ further justifies the choice of 0 as a threshold parameter. The PnL reported for
   \end{subfigure}
   \caption{1-Hour Markouts}
 \end{figure}
-Surprisingly,most of the pairs are profitable, with Allegiant Airlines standing out 
+Surprisingly, most of the pairs are profitable, with Allegiant Airlines standing out 
 as one of the most profitable companies to trade, likely due to its volatility, which
 can be seen in Figure 4(a). The ellipse is very steep, meaning that for
 returns in Delta Airlines stock, Allegiant stock is quite volatile.
@@ -289,7 +290,7 @@ Having seen the success of the pairwise analyses and the positive markouts for
 a $\lambda=0$ signal, one might wonder what improvements could be had by including
 more predictors in the regression models. However, the returns of the stocks in the 
 data set are correlated (Figure 2) and in some cases would be prohibitively multicollinear under
-and OLS model. In order to solve this problem, we can transform the returns into
+an OLS model. In order to solve this problem, we can transform the returns into
 orthogonal principal components and regress on the transformed data. 
 
 \subsection{Orthogonal Transformation}
@@ -351,13 +352,13 @@ we can flip the signs of the values for easier visual analysis.
 As mentioned in the start of section 3.1, I examined several subsets of data and 
 settled on the full principal component set as the best set of predictors for the model.
 The model can be thought of as follows:
-$$x_{target} = f(T(\mathbf{X}_{-target}))
+$$\hat x_{target} = f(T(\mathbf{X}_{-target}))
 \quad
 \mathbf{X} = \begin{bmatrix}x_{target}, \mathbf{X}_{-target}\end{bmatrix}
 $$
 where $T$ is the orthogonal transformation applied to the predictors and
 $f$ is the function learned by OLS. Section 6.1
-outlines several choices of $\mathbf{X}$ and their corresponding RMSE. I also pplied
+outlines several choices of $\mathbf{X}$ and their corresponding RMSE. I also applied
 a lasso regression to the data with a cross validated tuning parameter for 
 the impact of the L1 penalty, however, I found that the optimal loss penalty 
 was very small and that the RMSE of the original OLS model was better in 
@@ -457,7 +458,7 @@ defined by the test set.
 This paper highlights two statistical mean reversion trading strategies and evaluates
 them on their peak signal profit or loss. The simpler pairwise trading strategy 
 outperformed the basket strategy that utilized a larger set of features and principal
-component analysis to preprocess and feature select these features. On the surface, this is a
+component analysis to preprocess and select these features. On the surface, this is a
 counterintuitive result because one might believe that more data allows for better 
 models. However, the deterioration of the basket strategy indicates the potentially
 problematic effects of higher dimensional data. In order to achieve comparable quality
